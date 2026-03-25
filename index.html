@@ -78,6 +78,19 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sa
 #sb-ov.open{display:block}
 .notif{position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;padding:12px 18px;border-radius:10px;font-size:13px;font-weight:600;z-index:2000;transform:translateY(80px);opacity:0;transition:all .3s;box-shadow:var(--shl)}
 .notif.show{transform:translateY(0);opacity:1}
+.aip{display:flex;flex-direction:column;height:100%}
+.aim{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;background:var(--bg);-webkit-overflow-scrolling:touch}
+.ai-msg{max-width:86%;padding:12px 16px;border-radius:14px;font-size:13px;line-height:1.6}
+.ai-msg.u{background:var(--teal);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+.ai-msg.a{background:var(--card);color:var(--t1);align-self:flex-start;border-bottom-left-radius:4px;border:1px solid var(--border);box-shadow:var(--sh)}
+.ai-msg.s{background:rgba(43,169,155,.1);color:var(--teal-d);align-self:center;font-size:11px;font-weight:600;padding:5px 14px;border-radius:20px}
+.ag-tag{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--t3);margin-bottom:5px}
+.ai-bar{padding:12px 16px;background:var(--card);border-top:1px solid var(--border);display:flex;gap:10px;align-items:flex-end;flex-shrink:0}
+.ai-inp{flex:1;border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;font-size:13px;resize:none;min-height:44px;max-height:160px;font-family:inherit;transition:border .15s}
+.ai-inp:focus{outline:none;border-color:var(--teal)}
+.apply-bar{background:var(--teal-l);border:1.5px solid var(--teal);border-radius:10px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 16px 8px;flex-wrap:wrap}
+.apply-bar span{font-size:13px;color:var(--teal-d);font-weight:600}
+.quick-btns{padding:10px 16px;display:flex;gap:8px;flex-wrap:wrap;background:var(--card);border-top:1px solid var(--border);flex-shrink:0}
 .spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .prov-tag{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;text-transform:uppercase}
@@ -106,6 +119,8 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sa
     <div class="ni" onclick="go('proveedores')" data-v="proveedores"><span class="ic">🏭</span>Proveedores</div>
     <div class="nvs">Crear</div>
     <div class="ni" onclick="go('nueva')" data-v="nueva"><span class="ic">✏️</span>Nueva Factura</div>
+    <div class="nvs">IA</div>
+    <div class="ni" onclick="go('agente')" data-v="agente"><span class="ic">🤖</span>Agente Facturas</div>
     <div class="nvs">Config</div>
     <div class="ni" onclick="go('cfg')" data-v="cfg"><span class="ic">⚙️</span>Configuración</div>
   </nav>
@@ -268,6 +283,37 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sa
 </div>
 </div>
 
+
+<!-- AGENTE DE FACTURACIÓN -->
+<div class="view" id="v-agente">
+<div class="aip">
+  <div style="padding:14px 16px;background:var(--card);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;flex-wrap:wrap;gap:8px">
+    <div>
+      <div style="font-size:13px;font-weight:800">🤖 Agente de Facturación</div>
+      <div style="font-size:11px;color:var(--t3)" id="ag-status-lbl">Claude AI · Listo para generar facturas</div>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <span id="ag-key-badge" style="font-size:11px;padding:3px 8px;border-radius:6px;font-weight:600;background:#fed7d7;color:#742a2a">Sin API Key</span>
+      <button class="btn btn-xs btn-ghost" onclick="go('cfg');setTimeout(()=>swTab(document.querySelectorAll('.tab')[1],'t-api'),100)">⚙️ Configurar</button>
+      <button class="btn btn-xs btn-ghost" onclick="clearChat()">🗑 Limpiar</button>
+    </div>
+  </div>
+  <div class="aim" id="chat-msgs"></div>
+  <div id="apply-area"></div>
+  <div class="quick-btns">
+    <span style="font-size:11px;color:var(--t3);font-weight:600;align-self:center">Ejemplos:</span>
+    <button class="btn btn-xs btn-ghost" onclick="quickMsg('Factura Xingang: 300 playeras talla M a $12.50 y 150 sudaderas con capucha a $18.00. Flete $450. Para GERARKILIK')">👕 Xingang ropa</button>
+    <button class="btn btn-xs btn-ghost" onclick="quickMsg('Factura Jinze: 500 cobijas microfleece a $25 y 200 cobijas sherpa a $32. Flete 10% del subtotal. Para SERVICIOS MERCANTILES')">🛏 Jinze cobijas</button>
+    <button class="btn btn-xs btn-ghost" onclick="quickMsg('Factura Deals Hunter: 2000 tenis running a $28.50 y 1500 tenis training a $31. Envío $15,000. Para GERARKILIK')">👟 Deals Hunter zapatos</button>
+    <button class="btn btn-xs btn-ghost" onclick="quickMsg('Revisa mi última factura y dime si hay algún error o dato que falta')">🔍 Revisar última</button>
+  </div>
+  <div class="ai-bar">
+    <textarea class="ai-inp" id="chat-inp" placeholder="Describe la factura... ej: 'Factura para Xingang: 400 playeras a $13.50, 200 sudaderas a $19.00. Flete $600. Consignatario GERARKILIK RFC DGE231016SB4'" rows="1" onkeydown="chatKey(event)"></textarea>
+    <button class="btn btn-teal" onclick="sendChat()" style="height:44px;padding:0 16px;flex-shrink:0" id="send-btn">Enviar</button>
+  </div>
+</div>
+</div>
+
 <!-- CONFIG -->
 <div class="view" id="v-cfg">
 <div class="content">
@@ -337,7 +383,7 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sa
 const API = 'https://api.base44.com/api/apps/69bcee79d908094d21d71ce3/functions/invoiceApi';
 const ST = {invoices:[],clientes:[],cfg:{},LI:[{desc:'',uom:'PCS',qty:0,price:0}],curInv:null};
 
-const VIEWS = {dash:{t:'Dashboard',s:'Resumen general'},invoices:{t:'Facturas',s:'Gestión de facturas'},proveedores:{t:'Proveedores',s:'Directorio de proveedores'},nueva:{t:'Nueva Factura',s:'Crear factura'},cfg:{t:'Configuración',s:'Ajustes del sistema'}};
+const VIEWS = {dash:{t:'Dashboard',s:'Resumen general'},invoices:{t:'Facturas',s:'Gestión de facturas'},proveedores:{t:'Proveedores',s:'Directorio de proveedores'},nueva:{t:'Nueva Factura',s:'Crear factura'},cfg:{t:'Configuración',s:'Ajustes del sistema'},agente:{t:'Agente de Facturación',s:'Genera facturas desde texto o datos'}};
 
 async function api(p){try{const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)});return await r.json()}catch(e){return{error:e.message}}}
 function go(v){
@@ -348,7 +394,7 @@ function go(v){
   const m=VIEWS[v]||{t:v,s:''};
   document.getElementById('tb-t').textContent=m.t;document.getElementById('tb-s').textContent=m.s;
   if(v==='dash')renderDash();if(v==='invoices')renderInv();if(v==='proveedores')renderProv();
-  if(v==='nueva')initNueva();if(v==='cfg')loadCfgUI();
+  if(v==='nueva')initNueva();if(v==='cfg')loadCfgUI();if(v==='agente')initAgente();
   closeSB();
 }
 function toggleSB(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('sb-ov').classList.toggle('open')}
@@ -866,6 +912,198 @@ function buildModern(inv,items,meta){
 </div>`;
 }
 
+
+// ===== AGENTE DE FACTURACIÓN =====
+const AGENT_PROMPT = `Eres el Agente de Facturación de Invoice OS, experto en facturas de comercio internacional.
+
+PROVEEDORES REGISTRADOS EN EL SISTEMA:
+1. ZHEJIANG XINGANG EXPORT AND IMPORT CO LTD — China, ropa infantil (playeras, sudaderas, hoodies). Plantilla: xingang
+2. CHANGSHU JINZE TEXTILE CO LTD — China, textiles y cobijas. Plantilla: jinze  
+3. DEALS HUNTER INC — USA (Los Angeles), calzado deportivo. Plantilla: dealshunter
+
+CONSIGNATARIOS HABITUALES:
+- DISTRIBUIDORA GERARKILIK SA DE CV · RFC: DGE231016SB4 · Dir: AGUIAR Y SEIJAS 166 BOSQUE DE CHAPULTEPEC 1a SECCION, MIGUEL HIDALGO, MEXICO 11580
+- SERVICIOS MERCANTILES OS SA DE CV · RFC: SMO150410FH7 · Dir: CDA DE PERALES 10-A, INT 101 EX HACIENDA COAPA TLALPAN, MEXICO CITY 14330
+
+CUANDO EL USUARIO TE DÉ DATOS DE UNA FACTURA:
+1. Identifica el proveedor y elige la plantilla correcta automáticamente
+2. Extrae: productos, cantidades, precios unitarios, flete, consignatario
+3. Calcula subtotal y total (subtotal + flete)
+4. Responde con un resumen CLARO en español
+5. Siempre incluye al final este bloque JSON EXACTO:
+
+---FACTURA_JSON---
+{
+  "proveedor": "nombre del proveedor",
+  "plantilla": "xingang|jinze|dealshunter|modern",
+  "consignatario": "nombre del consignatario",
+  "consignatario_rfc": "RFC",
+  "consignatario_dir": "dirección",
+  "productos": [
+    {"desc": "descripción", "uom": "PCS", "qty": 0, "price": 0.00}
+  ],
+  "flete": 0.00,
+  "moneda": "USD",
+  "puerto_origen": "Shanghai Port|Los Angeles",
+  "destino": "Mexico City",
+  "via": "MARITIME|AIR|GROUND",
+  "terms": "PARTIAL PAYMENT",
+  "notas": ""
+}
+---FIN_JSON---
+
+Si te falta información importante, pregunta solo lo estrictamente necesario.
+Si el usuario pide revisar, analizar o consultar facturas existentes, úsalas del contexto.
+Responde siempre en español.`;
+
+let chatHist = [];
+let pendingData = null;
+
+function initAgente(){
+  const key = localStorage.getItem('ios_ckey')||'';
+  const badge = document.getElementById('ag-key-badge');
+  const lbl = document.getElementById('ag-status-lbl');
+  if(key){ badge.style.background='#c6f6d5'; badge.style.color='#276749'; badge.textContent='Claude Activo'; }
+  else { badge.style.background='#fed7d7'; badge.style.color='#742a2a'; badge.textContent='Sin API Key'; }
+  if(!chatHist.length) initChat();
+}
+function initChat(){
+  const msgs = document.getElementById('chat-msgs');
+  if(msgs) msgs.innerHTML='';
+  chatHist=[];pendingData=null;
+  addMsg('s','Agente de Facturación · Invoice OS');
+  addMsg('a',`¡Hola! Soy tu *Agente de Facturación*. 
+
+Dime los datos de la compra y genero la factura completa al instante.
+
+Puedo reconocer automáticamente el proveedor (Xingang, Jinze, Deals Hunter) y aplicar el formato correcto.
+
+Ejemplo: *"400 playeras Xingang a $13.50 y 200 sudaderas a $19, flete $600, para GERARKILIK"*`);
+}
+function clearChat(){ initChat(); document.getElementById('apply-area').innerHTML=''; }
+
+function addMsg(type, text){
+  const msgs = document.getElementById('chat-msgs'); if(!msgs)return;
+  const d = document.createElement('div'); d.className='ai-msg '+type;
+  if(type==='a') d.innerHTML=`<div class="ag-tag">🤖 Agente de Facturación</div>`+text.replace(/\*([^*]+)\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+  else d.textContent=text;
+  msgs.appendChild(d); msgs.scrollTop=msgs.scrollHeight;
+}
+function quickMsg(txt){ document.getElementById('chat-inp').value=txt; sendChat(); }
+function chatKey(e){ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat()} }
+
+async function sendChat(){
+  const inp = document.getElementById('chat-inp');
+  const txt = inp.value.trim(); if(!txt)return;
+  inp.value=''; addMsg('u',txt);
+  chatHist.push({role:'user',content:txt});
+  const key = localStorage.getItem('ios_ckey')||'';
+  const model = localStorage.getItem('ios_cmod')||'claude-opus-4-5';
+  const sendBtn = document.getElementById('send-btn');
+  sendBtn.disabled=true; sendBtn.innerHTML='<span class="spin"></span>';
+
+  if(!key){
+    setTimeout(()=>{
+      sendBtn.disabled=false; sendBtn.innerHTML='Enviar';
+      addMsg('a','⚠️ Necesitas configurar tu *API Key de Claude* para usar el agente.\n\nVe a *Configuración → API Keys* y agrega tu clave de Anthropic (sk-ant-...).');
+    },400);
+    return;
+  }
+
+  // Contexto de facturas recientes para el agente
+  const ctx = ST.invoices.slice(0,5).map(i=>({num:i.numero,proveedor:i.cliente_nombre,consignatario:i.emisor_nombre,total:i.total,fecha:i.fecha_emision,status:i.status}));
+  const ctxStr = ctx.length ? `\n\nFACTURAS RECIENTES EN EL SISTEMA:\n${JSON.stringify(ctx,null,2)}` : '';
+
+  addMsg('s','⏳ Procesando...');
+  try{
+    const r = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({
+        model,max_tokens:3000,
+        system: AGENT_PROMPT + ctxStr,
+        messages: [...chatHist.slice(-8), {role:'user',content:txt}]
+      })
+    });
+    document.querySelectorAll('.ai-msg.s').forEach((el,i,arr)=>{if(i===arr.length-1)el.remove()});
+    sendBtn.disabled=false; sendBtn.innerHTML='Enviar';
+    if(!r.ok){const e=await r.json();addMsg('a','❌ Error: '+(e.error?.message||r.status));return;}
+    const data = await r.json();
+    const reply = data.content?.[0]?.text||'';
+    chatHist.push({role:'assistant',content:reply});
+
+    // Limpiar JSON del reply visible
+    const cleanReply = reply.replace(/---FACTURA_JSON---[\s\S]*?---FIN_JSON---/g,'').trim();
+    addMsg('a', cleanReply);
+
+    // Extraer JSON de factura
+    const m = reply.match(/---FACTURA_JSON---([\s\S]+?)---FIN_JSON---/);
+    if(m){
+      try{
+        const fd = JSON.parse(m[1].trim());
+        pendingData = fd;
+        showApplyBar(fd);
+      }catch(e){ console.log('JSON parse error',e); }
+    }
+  }catch(e){
+    document.querySelectorAll('.ai-msg.s').forEach((el,i,arr)=>{if(i===arr.length-1)el.remove()});
+    sendBtn.disabled=false; sendBtn.innerHTML='Enviar';
+    addMsg('a','❌ Error de conexión: '+e.message);
+  }
+}
+
+function showApplyBar(fd){
+  const area = document.getElementById('apply-area');
+  const prods = (fd.productos||[]).length;
+  const sub = (fd.productos||[]).reduce((s,p)=>s+(p.qty*p.price),0);
+  const tot = sub + (fd.flete||0);
+  area.innerHTML=`<div class="apply-bar">
+    <div>
+      <span>✅ <strong>${fd.proveedor||'Proveedor'}</strong> · ${prods} producto(s) · Total <strong>$${tot.toLocaleString('en-US',{minimumFractionDigits:2})} ${fd.moneda||'USD'}</strong></span><br>
+      <span style="font-size:11px;opacity:.8">Consignatario: ${fd.consignatario||''} · Plantilla: ${fd.plantilla||'modern'}</span>
+    </div>
+    <button class="btn btn-teal btn-sm" onclick="applyToForm()">✏️ Crear Factura</button>
+  </div>`;
+}
+
+function applyToForm(){
+  const fd = pendingData; if(!fd)return;
+  go('nueva');
+  setTimeout(()=>{
+    // Proveedor
+    if(fd.proveedor) document.getElementById('f-cn').value = fd.proveedor;
+    // Auto-seleccionar proveedor del dropdown
+    const sel = document.getElementById('f-prov-sel');
+    if(sel && fd.proveedor){
+      const opt = Array.from(sel.options).find(o=>o.text.toLowerCase().includes(fd.proveedor.toLowerCase().split(' ')[0]));
+      if(opt){ sel.value=opt.value; fillProv(); }
+    }
+    // Plantilla
+    if(fd.plantilla) document.getElementById('f-tpl').value = fd.plantilla;
+    // Consignatario
+    if(fd.consignatario) document.getElementById('f-cons').value = fd.consignatario;
+    if(fd.consignatario_rfc) document.getElementById('f-rfc').value = fd.consignatario_rfc;
+    if(fd.consignatario_dir) document.getElementById('f-cdir').value = fd.consignatario_dir;
+    // Logística
+    if(fd.puerto_origen) document.getElementById('f-por').value = fd.puerto_origen;
+    if(fd.destino) document.getElementById('f-dest').value = fd.destino;
+    if(fd.via) document.getElementById('f-via').value = fd.via;
+    if(fd.terms) document.getElementById('f-terms').value = fd.terms;
+    if(fd.notas) document.getElementById('f-no').value = fd.notas;
+    if(fd.moneda) document.getElementById('f-cur').value = fd.moneda;
+    if(fd.flete) document.getElementById('f-freight').value = fd.flete;
+    // Productos
+    if(fd.productos && fd.productos.length){
+      ST.LI = fd.productos.map(p=>({desc:p.desc||'',uom:p.uom||'PCS',qty:parseFloat(p.qty||0),price:parseFloat(p.price||0)}));
+      renderLI(); calcT();
+    }
+    lp();
+    document.getElementById('apply-area').innerHTML='';
+    notif('✅ Datos aplicados — revisa y guarda la factura');
+    // Scroll arriba
+    document.querySelector('#v-nueva .content')?.scrollTo({top:0,behavior:'smooth'});
+  },350);
+}
 // CONFIG
 function loadCfgUI(){
   const cfg=ST.cfg;
