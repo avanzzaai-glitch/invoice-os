@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Invoice OS — Avanzza</title>
+<style>
+:root{
+  --navy:#1B2D3E;--teal:#2BA99B;--teal-d:#1e7a6f;--teal-l:#e1f5f2;
+  --bg:#F0F4F8;--card:#fff;--border:#E2E8F0;
+  --t1:#1a202c;--t2:#4a5568;--t3:#a0aec0;
+  --rl:12px;--shadow:0 1px 4px rgba(0,0,0,.08);--shadow-lg:0 8px 32px rgba(0,0,0,.14);
+  --red:#e53e3e;--green:#38a169;--yellow:#d69e2e;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--t1);-webkit-font-smoothing:antialiased}
+.app{display:flex;height:100vh;overflow:hidden}
+.sb{width:230px;background:var(--navy);display:flex;flex-direction:column;flex-shrink:0;z-index:300;transition:transform .28s}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.view{display:none;flex-direction:column;flex:1;overflow:hidden}
+.view.active{display:flex}
+.content{flex:1;overflow-y:auto;padding:20px;-webkit-overflow-scrolling:touch}
+.sb-logo{padding:20px 16px 14px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sb-logo-title{color:#fff;font-size:17px;font-weight:800}
+.sb-logo-sub{color:rgba(255,255,255,.45);font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-top:2px}
+.nav{flex:1;padding:10px 8px;display:flex;flex-direction:column;gap:2px;overflow-y:auto}
+.nav-s{color:rgba(255,255,255,.35);font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;padding:12px 8px 4px}
+.ni{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;color:rgba(255,255,255,.7);font-size:13px;font-weight:500;transition:all .15s;user-select:none}
+.ni:hover{background:rgba(255,255,255,.08);color:#fff}
+.ni.active{background:var(--teal);color:#fff;font-weight:600}
+.ni .ic{font-size:15px;width:20px;text-align:center;flex-shrink:0}
+.topbar{background:var(--card);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;box-shadow:var(--shadow);gap:10px}
+.hamburger{display:none;background:none;border:none;cursor:pointer;padding:4px;border-radius:6px;flex-direction:column;gap:4px}
+.hamburger span{display:block;width:20px;height:2px;background:var(--t1);border-radius:2px}
+.tb-left{display:flex;align-items:center;gap:12px}
+.tb-title{font-size:16px;font-weight:800}
+.tb-sub{font-size:11px;color:var(--t3);margin-top:1px}
+.tb-actions{display:flex;gap:8px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s;white-space:nowrap}
+.btn-teal{background:var(--teal);color:#fff}.btn-teal:hover{background:var(--teal-d)}
+.btn-navy{background:var(--navy);color:#fff}
+.btn-ghost{background:transparent;color:var(--t2);border:1.5px solid var(--border)}.btn-ghost:hover{background:var(--bg)}
+.btn-sm{padding:6px 11px;font-size:12px}
+.btn-xs{padding:4px 8px;font-size:11px;border-radius:6px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--rl);padding:18px;box-shadow:var(--shadow)}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:var(--rl);padding:16px;box-shadow:var(--shadow)}
+.kl{font-size:10px;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.kv{font-size:24px;font-weight:800;line-height:1}
+.kv-sub{font-size:10px;color:var(--t3);margin-top:4px}
+.badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.b-g{background:#c6f6d5;color:#276749}.b-y{background:#fefcbf;color:#744210}.b-r{background:#fed7d7;color:#742a2a}.b-gr{background:#edf2f7;color:#4a5568}
+.dt-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.dt{width:100%;border-collapse:collapse;font-size:13px}
+.dt th{padding:10px 14px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--t3);border-bottom:1.5px solid var(--border);background:var(--bg);white-space:nowrap}
+.dt td{padding:12px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+.dt tr:last-child td{border-bottom:none}
+.dt tr:hover td{background:rgba(43,169,155,.04)}
+.cl{color:var(--teal);cursor:pointer;font-weight:600}.cl:hover{text-decoration:underline}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.fld{display:flex;flex-direction:column;gap:5px}
+.fld label{font-size:12px;font-weight:600;color:var(--t2)}
+.fld input,.fld select,.fld textarea{padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;color:var(--t1);background:var(--card);transition:border .15s;font-family:inherit;width:100%}
+.fld input:focus,.fld select:focus,.fld textarea:focus{outline:none;border-color:var(--teal)}
+.fld textarea{resize:vertical;min-height:72px}
+.fld-full{grid-column:1/-1}
+.sec-title{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin:16px 0 10px;padding-bottom:6px;border-bottom:1.5px solid var(--border)}
+.li-table{width:100%;border-collapse:collapse;margin-bottom:8px}
+.li-table th{padding:7px 8px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t3);border-bottom:1.5px solid var(--border);background:var(--bg);text-align:left}
+.li-table td{padding:5px 5px;border-bottom:1px solid var(--border)}
+.li-table td input{border:1.5px solid var(--border);border-radius:6px;padding:6px 8px;font-size:12px;width:100%;background:#fff}
+.li-table td input:focus{outline:none;border-color:var(--teal)}
+.li-del{background:none;border:none;color:var(--t3);cursor:pointer;font-size:18px;padding:2px 8px;border-radius:4px}.li-del:hover{color:var(--red)}
+.tabs{display:flex;border-bottom:2px solid var(--border);margin-bottom:16px;gap:4px}
+.tab{padding:8px 16px;font-size:13px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s}
+.tab.active{color:var(--teal);border-bottom-color:var(--teal)}
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center;padding:16px}
+.modal-ov.open{display:flex}
+.modal{background:var(--card);border-radius:var(--rl);padding:24px;width:100%;max-width:540px;box-shadow:var(--shadow-lg);max-height:90vh;overflow-y:auto}
+.modal-title{font-size:15px;font-weight:800;margin-bottom:16px}
+.modal-foot{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+#sb-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:299}
+#sb-ov.open{display:block}
+.notif{position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;padding:12px 18px;border-radius:10px;font-size:13px;font-weight:600;z-index:2000;transform:translateY(80px);opacity:0;transition:all .3s;box-shadow:var(--shadow-lg)}
+.notif.show{transform:translateY(0);opacity:1}
+.agents-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
+.ag-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--rl);padding:18px;cursor:pointer;transition:all .2s;position:relative}
+.ag-card:hover{border-color:var(--teal);box-shadow:0 4px 16px rgba(43,169,155,.15)}
+.ag-card.sel{border-color:var(--teal);background:var(--teal-l)}
+.ag-dot{position:absolute;top:12px;right:12px;width:8px;height:8px;border-radius:50%}
+.ag-dot.on{background:var(--green)}.ag-dot.busy{background:var(--yellow)}
+.ai-panel{display:flex;flex-direction:column;height:100%}
+.ai-msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;-webkit-overflow-scrolling:touch;background:var(--bg)}
+.ai-msg{max-width:84%;padding:12px 15px;border-radius:14px;font-size:13px;line-height:1.55}
+.ai-msg.u{background:var(--teal);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+.ai-msg.a{background:var(--card);color:var(--t1);align-self:flex-start;border-bottom-left-radius:4px;border:1px solid var(--border);box-shadow:var(--shadow)}
+.ai-msg.s{background:rgba(43,169,155,.1);color:var(--teal-d);align-self:center;font-size:11px;font-weight:600;padding:5px 14px;border-radius:20px}
+.ag-tag{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--t3);margin-bottom:5px}
+.ai-bar{padding:12px 16px;background:var(--card);border-top:1px solid var(--border);display:flex;gap:10px;align-items:flex-end;flex-shrink:0}
+.ai-inp{flex:1;border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;font-size:13px;resize:none;min-height:44px;max-height:120px;font-family:inherit;transition:border .15s}
+.ai-inp:focus{outline:none;border-color:var(--teal)}
+@media(max-width:768px){
+  .sb{display:none;position:fixed;top:0;left:0;height:100vh;width:260px;transform:translateX(-100%);transition:transform .28s}
+  .sb.open{display:flex;transform:translateX(0);box-shadow:4px 0 24px rgba(0,0,0,.3)}
+  .hamburger{display:flex}
+  .kpi-grid{grid-template-columns:repeat(2,1fr)}
+  .form-grid{grid-template-columns:1fr}
+  .agents-grid{grid-template-columns:1fr 1fr}
+  .content{padding:12px}
+}
+@media(max-width:480px){.agents-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="sb-ov" onclick="closeSB()"></div>
+<div class="app">
+
+<!-- SIDEBAR -->
+<div class="sb" id="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-title">⚡ Invoice OS</div>
+    <div class="sb-logo-sub">Powered by Avanzza AI</div>
+  </div>
+  <nav class="nav">
+    <div class="nav-s">Principal</div>
+    <div class="ni active" onclick="go('dash')" data-v="dash"><span class="ic">📊</span>Dashboard</div>
+    <div class="ni" onclick="go('invoices')" data-v="invoices"><span class="ic">📄</span>Facturas</div>
+    <div class="ni" onclick="go('clientes')" data-v="clientes"><span class="ic">👥</span>Clientes</div>
+    <div class="nav-s">Crear</div>
+    <div class="ni" onclick="go('nueva')" data-v="nueva"><span class="ic">✏️</span>Nueva Factura</div>
+    <div class="ni" onclick="go('editor')" data-v="editor"><span class="ic">🎨</span>Editor Visual</div>
+    <div class="nav-s">IA</div>
+    <div class="ni" onclick="go('agentes')" data-v="agentes"><span class="ic">🤖</span>Multi-Agentes</div>
+    <div class="ni" onclick="go('chat')" data-v="chat"><span class="ic">💬</span>Chat IA</div>
+    <div class="nav-s">Config</div>
+    <div class="ni" onclick="go('cfg')" data-v="cfg"><span class="ic">⚙️</span>Configuración</div>
+  </nav>
+  <div style="padding:14px 16px;border-top:1px solid rgba(255,255,255,.1)">
+    <div style="color:rgba(255,255,255,.35);font-size:10px">Invoice OS v1.0 · Avanzza AI</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+<div class="topbar">
+  <div class="tb-left">
+    <button class="hamburger" onclick="toggleSB()"><span></span><span></span><span></span></button>
+    <div><div class="tb-title" id="tb-t">Dashboard</div><div class="tb-sub" id="tb-s">Resumen general</div></div>
+  </div>
+  <div class="tb-actions">
+    <button class="btn btn-ghost btn-sm" onclick="go('chat')">🤖 IA</button>
+    <button class="btn btn-teal btn-sm" onclick="go('nueva')">+ Nueva</button>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="view active" id="v-dash">
+<div class="content">
+  <div class="kpi-grid">
+    <div class="kpi"><div class="kl">Facturado</div><div class="kv" id="kv-tot" style="color:var(--teal)">$0</div><div class="kv-sub">Total cobrado</div></div>
+    <div class="kpi"><div class="kl">Pagadas</div><div class="kv" id="kv-paid" style="color:var(--green)">0</div><div class="kv-sub">Facturas cobradas</div></div>
+    <div class="kpi"><div class="kl">Pendientes</div><div class="kv" id="kv-pend" style="color:var(--yellow)">0</div><div class="kv-sub">Por cobrar</div></div>
+    <div class="kpi"><div class="kl">Vencidas</div><div class="kv" id="kv-ovr" style="color:var(--red)">0</div><div class="kv-sub">Requieren acción</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 300px;gap:14px;align-items:start">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div style="font-size:14px;font-weight:700">Facturas Recientes</div>
+        <span class="cl" onclick="go('invoices')" style="font-size:12px">Ver todas →</span>
+      </div>
+      <div class="dt-wrap"><table class="dt"><thead><tr><th>#</th><th>Cliente</th><th>Fecha</th><th>Monto</th><th>Estado</th><th></th></tr></thead>
+      <tbody id="dash-tb"></tbody></table></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="card">
+        <div style="font-size:13px;font-weight:700;margin-bottom:12px">🤖 Agentes</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:center;gap:8px;font-size:12px"><div style="width:7px;height:7px;border-radius:50%;background:var(--green)"></div><span>✏️ Agente Creador</span><span style="margin-left:auto;font-size:10px;color:var(--t3)">Activo</span></div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:12px"><div style="width:7px;height:7px;border-radius:50%;background:var(--green)"></div><span>🔍 Agente Revisor</span><span style="margin-left:auto;font-size:10px;color:var(--t3)">Activo</span></div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:12px"><div style="width:7px;height:7px;border-radius:50%;background:var(--yellow)"></div><span>💰 Agente Cobrador</span><span style="margin-left:auto;font-size:10px;color:var(--t3)">Standby</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div style="font-size:13px;font-weight:700;margin-bottom:10px">⚡ Acciones</div>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <button class="btn btn-teal" style="justify-content:center;width:100%" onclick="go('nueva')">✏️ Nueva Factura</button>
+          <button class="btn btn-ghost" style="justify-content:center;width:100%" onclick="go('chat')">💬 Generar con IA</button>
+          <button class="btn btn-ghost" style="justify-content:center;width:100%" onclick="go('editor')">🎨 Editor Visual</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- FACTURAS -->
+<div class="view" id="v-invoices">
+<div class="content">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <input id="inv-q" type="text" placeholder="🔍 Buscar..." style="padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;width:180px" oninput="renderInv()">
+      <select id="inv-f" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px" onchange="renderInv()">
+        <option value="">Todas</option><option value="pagada">Pagadas</option><option value="pendiente">Pendientes</option><option value="vencida">Vencidas</option><option value="borrador">Borradores</option>
+      </select>
+    </div>
+    <button class="btn btn-teal btn-sm" onclick="go('nueva')">+ Nueva</button>
+  </div>
+  <div class="card"><div class="dt-wrap"><table class="dt"><thead><tr><th>#</th><th>Cliente</th><th>Fecha</th><th>Vence</th><th>Monto</th><th>Estado</th><th></th></tr></thead><tbody id="inv-tb"></tbody></table></div></div>
+</div>
+</div>
+
+<!-- CLIENTES -->
+<div class="view" id="v-clientes">
+<div class="content">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <div style="font-size:14px;font-weight:700">Directorio de Clientes</div>
+    <button class="btn btn-teal btn-sm" onclick="openM('m-cli')">+ Cliente</button>
+  </div>
+  <div class="card"><div class="dt-wrap"><table class="dt"><thead><tr><th>Nombre</th><th>RFC</th><th>Email</th><th>Facturas</th><th>Total</th><th></th></tr></thead><tbody id="cli-tb"></tbody></table></div></div>
+</div>
+</div>
+
+<!-- NUEVA FACTURA -->
+<div class="view" id="v-nueva">
+<div class="content">
+  <div style="display:grid;grid-template-columns:1fr 380px;gap:18px;align-items:start">
+    <div>
+      <div class="card" style="margin-bottom:12px">
+        <div class="sec-title">📋 Datos</div>
+        <div class="form-grid">
+          <div class="fld"><label>Número</label><input type="text" id="f-num" value="INV-001"></div>
+          <div class="fld"><label>Moneda</label><select id="f-cur"><option value="MXN">MXN</option><option value="USD">USD</option><option value="EUR">EUR</option></select></div>
+          <div class="fld"><label>Emisión</label><input type="date" id="f-fecha"></div>
+          <div class="fld"><label>Vencimiento</label><input type="date" id="f-vence"></div>
+          <div class="fld fld-full"><label>Estado</label><select id="f-status"><option value="borrador">Borrador</option><option value="pendiente">Pendiente</option><option value="pagada">Pagada</option><option value="vencida">Vencida</option></select></div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:12px">
+        <div class="sec-title">👥 Cliente</div>
+        <div class="form-grid">
+          <div class="fld"><label>Nombre / Empresa</label><input type="text" id="f-cnom" placeholder="Empresa S.A. de C.V." oninput="livePreview()"></div>
+          <div class="fld"><label>RFC</label><input type="text" id="f-crfc" placeholder="XAXX010101000" oninput="livePreview()"></div>
+          <div class="fld fld-full"><label>Dirección</label><input type="text" id="f-cdir" placeholder="Av. Reforma 123, CDMX" oninput="livePreview()"></div>
+          <div class="fld"><label>Email</label><input type="email" id="f-cemail" placeholder="cliente@empresa.com"></div>
+          <div class="fld"><label>Teléfono</label><input type="tel" id="f-ctel" placeholder="+52 55 1234 5678"></div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:12px">
+        <div class="sec-title">📦 Conceptos</div>
+        <table class="li-table"><thead><tr><th style="width:42%">Descripción</th><th style="width:12%">Cant.</th><th style="width:18%">Precio</th><th style="width:16%">Total</th><th style="width:30px"></th></tr></thead><tbody id="li-tb"></tbody></table>
+        <button class="btn btn-ghost btn-sm" onclick="addLI()" style="margin-top:8px">+ Concepto</button>
+        <div style="display:flex;justify-content:flex-end;margin-top:10px">
+          <div style="width:210px">
+            <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--t2);padding:3px 0"><span>Subtotal</span><span id="c-sub">$0.00</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--t2);padding:3px 0">
+              <span>IVA (<input type="number" id="iva-r" value="16" style="width:34px;border:1px solid var(--border);border-radius:4px;padding:1px 4px;font-size:11px" onchange="calcT()">%)</span>
+              <span id="c-iva">$0.00</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:800;color:var(--navy);padding:8px 0 0;border-top:2px solid var(--navy);margin-top:4px"><span>Total</span><span id="c-tot">$0.00</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:12px">
+        <div class="sec-title">📝 Notas</div>
+        <div class="fld"><textarea id="f-notas" placeholder="Condiciones de pago, datos bancarios..." rows="3" oninput="livePreview()"></textarea></div>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap">
+        <button class="btn btn-ghost" onclick="saveInv('borrador')">💾 Borrador</button>
+        <button class="btn btn-navy" onclick="go('editor')">🎨 Vista Previa</button>
+        <button class="btn btn-teal" onclick="saveInv('pendiente')">📤 Emitir</button>
+      </div>
+    </div>
+    <div style="position:sticky;top:0">
+      <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Preview en vivo</div>
+      <div id="live-prev" style="transform:scale(0.58);transform-origin:top left;width:172%;pointer-events:none;border-radius:8px;overflow:hidden;box-shadow:var(--shadow-lg)"></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- EDITOR VISUAL -->
+<div class="view" id="v-editor">
+<div class="content">
+  <div style="display:grid;grid-template-columns:280px 1fr;gap:18px;align-items:start">
+    <div>
+      <div class="card" style="margin-bottom:12px">
+        <div class="sec-title">🏢 Empresa</div>
+        <div class="fld" style="margin-bottom:10px"><label>Nombre</label><input type="text" id="ed-name" value="Mi Empresa S.A." oninput="edPreview()"></div>
+        <div class="fld" style="margin-bottom:10px"><label>Subtítulo</label><input type="text" id="ed-sub" value="Servicios Profesionales" oninput="edPreview()"></div>
+      </div>
+      <div class="card" style="margin-bottom:12px">
+        <div class="sec-title">🎨 Colores</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="fld"><label>Principal</label><input type="color" id="ed-c1" value="#1B2D3E" oninput="edPreview()" style="height:36px;cursor:pointer;border-radius:6px;padding:2px"></div>
+          <div class="fld"><label>Acento</label><input type="color" id="ed-c2" value="#2BA99B" oninput="edPreview()" style="height:36px;cursor:pointer;border-radius:6px;padding:2px"></div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:12px">
+        <div class="sec-title">📄 Plantillas</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div onclick="applyTpl('modern')" style="border:2px solid var(--teal);border-radius:8px;padding:10px;cursor:pointer;text-align:center;font-size:12px;font-weight:700;color:var(--teal)">Modern</div>
+          <div onclick="applyTpl('minimal')" style="border:1.5px solid var(--border);border-radius:8px;padding:10px;cursor:pointer;text-align:center;font-size:12px;font-weight:600;color:var(--t2)">Minimal</div>
+          <div onclick="applyTpl('bold')" style="border:1.5px solid var(--border);border-radius:8px;padding:10px;cursor:pointer;text-align:center;font-size:12px;font-weight:600;color:var(--t2)">Bold</div>
+          <div onclick="applyTpl('corporate')" style="border:1.5px solid var(--border);border-radius:8px;padding:10px;cursor:pointer;text-align:center;font-size:12px;font-weight:600;color:var(--t2)">Corporate</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="sec-title">📤 Exportar</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button class="btn btn-navy" style="justify-content:center" onclick="printInv()">🖨️ Imprimir / PDF</button>
+          <button class="btn btn-ghost" style="justify-content:center" onclick="copyHTML()">📋 Copiar HTML</button>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px">Vista Previa de Plantilla</div>
+      <div id="ed-prev"></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- MULTI-AGENTES -->
+<div class="view" id="v-agentes">
+<div class="content">
+  <div style="margin-bottom:16px"><div style="font-size:14px;font-weight:700;margin-bottom:3px">Sistema Multi-Agente</div><div style="font-size:12px;color:var(--t2)">Agentes especializados de Claude trabajando en conjunto</div></div>
+  <div class="agents-grid">
+    <div class="ag-card sel" onclick="selAg('creador',this)"><div class="ag-dot on"></div><div style="font-size:26px;margin-bottom:8px">✏️</div><div style="font-size:14px;font-weight:700;margin-bottom:4px">Agente Creador</div><div style="font-size:12px;color:var(--t2);line-height:1.4">Genera facturas completas desde instrucciones en lenguaje natural. Extrae datos, calcula totales y estructura conceptos.</div><div style="margin-top:10px"><span class="badge b-g">Activo</span></div></div>
+    <div class="ag-card" onclick="selAg('revisor',this)"><div class="ag-dot on"></div><div style="font-size:26px;margin-bottom:8px">🔍</div><div style="font-size:14px;font-weight:700;margin-bottom:4px">Agente Revisor</div><div style="font-size:12px;color:var(--t2);line-height:1.4">Valida RFC, montos, IVA y datos del cliente. Detecta errores fiscales antes de emitir.</div><div style="margin-top:10px"><span class="badge b-g">Activo</span></div></div>
+    <div class="ag-card" onclick="selAg('redactor',this)"><div class="ag-dot on"></div><div style="font-size:26px;margin-bottom:8px">📝</div><div style="font-size:14px;font-weight:700;margin-bottom:4px">Agente Redactor</div><div style="font-size:12px;color:var(--t2);line-height:1.4">Optimiza descripciones de servicios y redacta términos de pago profesionales.</div><div style="margin-top:10px"><span class="badge b-g">Activo</span></div></div>
+    <div class="ag-card" onclick="selAg('cobrador',this)"><div class="ag-dot busy"></div><div style="font-size:26px;margin-bottom:8px">💰</div><div style="font-size:14px;font-weight:700;margin-bottom:4px">Agente Cobrador</div><div style="font-size:12px;color:var(--t2);line-height:1.4">Monitorea vencimientos y genera recordatorios de pago personalizados.</div><div style="margin-top:10px"><span class="badge b-y">Standby</span></div></div>
+    <div class="ag-card" onclick="selAg('exportador',this)"><div class="ag-dot on"></div><div style="font-size:26px;margin-bottom:8px">📤</div><div style="font-size:14px;font-weight:700;margin-bottom:4px">Agente Exportador</div><div style="font-size:12px;color:var(--t2);line-height:1.4">Prepara facturas para PDF, adapta el formato según plantilla y genera el HTML final.</div><div style="margin-top:10px"><span class="badge b-g">Activo</span></div></div>
+    <div class="ag-card" onclick="selAg('analitico',this)"><div class="ag-dot on"></div><div style="font-size:26px;margin-bottom:8px">📊</div><div style="font-size:14px;font-weight:700;margin-bottom:4px">Agente Analítico</div><div style="font-size:12px;color:var(--t2);line-height:1.4">Analiza patrones de facturación e identifica clientes más rentables.</div><div style="margin-top:10px"><span class="badge b-g">Activo</span></div></div>
+  </div>
+  <div class="card" id="ag-cfg">
+    <div style="font-size:13px;font-weight:700;margin-bottom:12px" id="ag-cfg-title">✏️ Agente Creador — Configuración</div>
+    <div class="form-grid">
+      <div class="fld"><label>Modelo</label><select id="ag-model"><option>claude-opus-4-5</option><option>claude-sonnet-3-7</option><option>claude-haiku-3-5</option></select></div>
+      <div class="fld"><label>Temperatura: <span id="ag-temp-val">0.3</span></label><input type="range" id="ag-temp" min="0" max="1" step="0.1" value="0.3" oninput="document.getElementById('ag-temp-val').textContent=this.value" style="width:100%;margin-top:8px"></div>
+      <div class="fld fld-full"><label>Prompt del Sistema</label><textarea id="ag-prompt" rows="4">Eres el Agente Creador de Invoice OS. Cuando el usuario te describa un servicio, extrae datos del cliente, conceptos, cantidades y precios. Calcula IVA al 16%. Responde con un resumen claro y pregunta si desea aplicar los datos a la factura.</textarea></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn btn-teal btn-sm" onclick="notif('✅ Configuración guardada')">💾 Guardar</button>
+      <button class="btn btn-ghost btn-sm" onclick="notif('🧪 Agente respondiendo correctamente')">🧪 Probar</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- CHAT IA -->
+<div class="view" id="v-chat">
+<div class="ai-panel">
+  <div style="padding:12px 16px;background:var(--card);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;flex-wrap:wrap;gap:8px">
+    <div><div style="font-size:13px;font-weight:700">Chat Multi-Agente</div><div style="font-size:11px;color:var(--t3)" id="ag-lbl">✏️ Agente Creador activo</div></div>
+    <div style="display:flex;gap:5px;flex-wrap:wrap">
+      <button class="btn btn-xs" id="btn-creador" onclick="setAg('creador')" style="border:1.5px solid var(--teal);color:var(--teal)">✏️ Creador</button>
+      <button class="btn btn-xs btn-ghost" id="btn-revisor" onclick="setAg('revisor')">🔍 Revisor</button>
+      <button class="btn btn-xs btn-ghost" id="btn-redactor" onclick="setAg('redactor')">📝 Redactor</button>
+      <button class="btn btn-xs btn-ghost" id="btn-cobrador" onclick="setAg('cobrador')">💰 Cobrador</button>
+    </div>
+  </div>
+  <div class="ai-msgs" id="chat-msgs"></div>
+  <div class="ai-bar">
+    <textarea class="ai-inp" id="chat-inp" placeholder="Describe la factura... ej: Factura para Empresa ABC por 3 meses consultoría a $15,000 mensual" rows="1" onkeydown="chatKey(event)"></textarea>
+    <button class="btn btn-teal" onclick="sendChat()" style="height:44px;padding:0 16px;flex-shrink:0">Enviar</button>
+  </div>
+</div>
+</div>
+
+<!-- CONFIG -->
+<div class="view" id="v-cfg">
+<div class="content">
+  <div class="tabs">
+    <div class="tab active" onclick="swTab(this,'t-emp')">🏢 Empresa</div>
+    <div class="tab" onclick="swTab(this,'t-api')">🔑 API Keys</div>
+    <div class="tab" onclick="swTab(this,'t-fis')">🧾 Fiscal</div>
+  </div>
+  <div id="t-emp" class="card" style="margin-bottom:14px">
+    <div class="sec-title">Datos de tu Empresa</div>
+    <div class="form-grid">
+      <div class="fld"><label>Razón Social</label><input type="text" id="cfg-razon" placeholder="Mi Empresa S.A. de C.V." oninput="saveCfg()"></div>
+      <div class="fld"><label>RFC Emisor</label><input type="text" id="cfg-rfc" placeholder="MIEM010101AAA" oninput="saveCfg()"></div>
+      <div class="fld fld-full"><label>Dirección Fiscal</label><input type="text" id="cfg-dir" placeholder="Calle, Colonia, CP, Estado" oninput="saveCfg()"></div>
+      <div class="fld"><label>Email</label><input type="email" id="cfg-email" placeholder="facturacion@empresa.com" oninput="saveCfg()"></div>
+      <div class="fld"><label>Teléfono</label><input type="tel" id="cfg-tel" placeholder="+52 55 0000 0000" oninput="saveCfg()"></div>
+      <div class="fld"><label>Sitio Web</label><input type="text" id="cfg-web" placeholder="www.empresa.com" oninput="saveCfg()"></div>
+      <div class="fld fld-full"><label>Pie de factura</label><textarea id="cfg-footer" rows="2" placeholder="Datos bancarios, condiciones..." oninput="saveCfg()"></textarea></div>
+    </div>
+  </div>
+  <div id="t-api" class="card" style="display:none;margin-bottom:14px">
+    <div class="sec-title">Claves API</div>
+    <div style="background:var(--teal-l);border:1px solid rgba(43,169,155,.3);border-radius:8px;padding:11px;font-size:12px;color:var(--teal-d);margin-bottom:14px">🔒 Las claves se guardan solo en tu navegador (localStorage). Nunca se envían a terceros.</div>
+    <div class="form-grid">
+      <div class="fld fld-full"><label>Claude API Key (Anthropic)</label><input type="password" id="cfg-ckey" placeholder="sk-ant-..." oninput="saveCfg()"></div>
+      <div class="fld"><label>Modelo Predeterminado</label><select id="cfg-cmod" onchange="saveCfg()"><option value="claude-opus-4-5">Claude claude-opus-4-5</option><option value="claude-sonnet-3-7">Claude Sonnet 3.7</option><option value="claude-haiku-3-5">Claude Haiku 3.5</option></select></div>
+      <div class="fld"><label>Max Tokens</label><input type="number" id="cfg-mtok" value="4096" oninput="saveCfg()"></div>
+    </div>
+    <div style="margin-top:12px;display:flex;align-items:center;gap:12px">
+      <button class="btn btn-teal btn-sm" onclick="testKey()">🧪 Probar Conexión</button>
+      <span id="key-res" style="font-size:12px;color:var(--t2)"></span>
+    </div>
+  </div>
+  <div id="t-fis" class="card" style="display:none">
+    <div class="sec-title">Configuración Fiscal</div>
+    <div class="form-grid">
+      <div class="fld"><label>IVA (%)</label><input type="number" id="cfg-iva" value="16" oninput="saveCfg()"></div>
+      <div class="fld"><label>Retención ISR (%)</label><input type="number" id="cfg-isr" value="0" oninput="saveCfg()"></div>
+      <div class="fld"><label>Prefijo de Folio</label><input type="text" id="cfg-pre" value="INV-" oninput="saveCfg()"></div>
+      <div class="fld"><label>Próximo Número</label><input type="number" id="cfg-nn" value="1" oninput="saveCfg()"></div>
+      <div class="fld"><label>Días de Crédito</label><input type="number" id="cfg-dc" value="30" oninput="saveCfg()"></div>
+    </div>
+  </div>
+</div>
+</div>
+
+</div><!-- /main -->
+</div><!-- /app -->
+
+<!-- MODALES -->
+<div class="modal-ov" id="m-cli">
+  <div class="modal">
+    <div class="modal-title">👥 Nuevo Cliente</div>
+    <div class="form-grid">
+      <div class="fld"><label>Nombre / Empresa</label><input type="text" id="mc-n" placeholder="Empresa S.A."></div>
+      <div class="fld"><label>RFC</label><input type="text" id="mc-r" placeholder="XAXX010101000"></div>
+      <div class="fld fld-full"><label>Dirección</label><input type="text" id="mc-d"></div>
+      <div class="fld"><label>Email</label><input type="email" id="mc-e"></div>
+      <div class="fld"><label>Teléfono</label><input type="tel" id="mc-t"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeM('m-cli')">Cancelar</button>
+      <button class="btn btn-teal" onclick="saveCli()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-ov" id="m-inv">
+  <div class="modal" style="max-width:680px">
+    <div class="modal-title" id="m-inv-t">Factura</div>
+    <div id="m-inv-c"></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeM('m-inv')">Cerrar</button>
+      <button class="btn btn-ghost btn-sm" onclick="editInv()">✏️ Editar</button>
+      <button class="btn btn-navy btn-sm" onclick="printCurr()">🖨️ PDF</button>
+    </div>
+  </div>
+</div>
+
+<div class="notif" id="notif-el"></div>
+
+<script>
+// STATE
+const ST = {
+  invoices: JSON.parse(localStorage.getItem('ios_inv')||'[]'),
+  clientes: JSON.parse(localStorage.getItem('ios_cli')||'[]'),
+  cfg: JSON.parse(localStorage.getItem('ios_cfg')||'{}'),
+  LI: [{desc:'',qty:1,price:0}],
+  agent: 'creador',
+  hist: [],
+  curInv: null
+};
+
+const VIEWS = {
+  dash:{t:'Dashboard',s:'Resumen general'},
+  invoices:{t:'Facturas',s:'Gestión de facturas'},
+  clientes:{t:'Clientes',s:'Directorio'},
+  nueva:{t:'Nueva Factura',s:'Crear factura'},
+  editor:{t:'Editor Visual',s:'Personalizar plantilla'},
+  agentes:{t:'Multi-Agentes',s:'Sistema de IA'},
+  chat:{t:'Chat IA',s:'Asistente inteligente'},
+  cfg:{t:'Configuración',s:'Ajustes del sistema'}
+};
+
+const PROMPTS = {
+  creador:`Eres el Agente Creador de Invoice OS, especializado en facturación mexicana.
+Cuando el usuario describa un servicio o venta, extrae: cliente, conceptos, cantidades, precios.
+Calcula subtotal, IVA 16%, total. Sugiere número de factura y vencimiento a 30 días.
+Responde en español con un resumen claro y amigable. Pregunta si desea aplicar los datos.`,
+  revisor:`Eres el Agente Revisor de Invoice OS. Valida datos fiscales mexicanos.
+Revisa: RFC (formato correcto), montos coherentes, IVA correcto, fechas válidas, conceptos claros.
+Usa: ❌ Error, ⚠️ Advertencia, ✅ OK. Responde en español.`,
+  redactor:`Eres el Agente Redactor. Mejoras textos de facturas para que sean más profesionales.
+Optimiza descripciones de servicios, términos de pago y notas legales. Responde en español.`,
+  cobrador:`Eres el Agente Cobrador. Gestionas cuentas por cobrar.
+Redacta recordatorios de pago profesionales, adapta el tono según días vencidos.
+Amable <15 días, firme 15-30, formal >30. Responde en español.`
+};
+
+// NAV
+function go(v){
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.ni').forEach(x=>x.classList.remove('active'));
+  const el = document.getElementById('v-'+v);
+  if(el) el.classList.add('active');
+  document.querySelectorAll(`[data-v="${v}"]`).forEach(x=>x.classList.add('active'));
+  const m = VIEWS[v]||{t:v,s:''};
+  document.getElementById('tb-t').textContent = m.t;
+  document.getElementById('tb-s').textContent = m.s;
+  if(v==='dash') renderDash();
+  if(v==='invoices') renderInv();
+  if(v==='clientes') renderCli();
+  if(v==='nueva') initNueva();
+  if(v==='editor') edPreview();
+  if(v==='cfg') loadCfg();
+  if(v==='chat' && !ST.hist.length) initChat();
+  closeSB();
+}
+function toggleSB(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('sb-ov').classList.toggle('open')}
+function closeSB(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sb-ov').classList.remove('open')}
+function openM(id){document.getElementById(id).classList.add('open')}
+function closeM(id){document.getElementById(id).classList.remove('open')}
+function notif(msg){const n=document.getElementById('notif-el');n.textContent=msg;n.classList.add('show');setTimeout(()=>n.classList.remove('show'),2800)}
+function swTab(el,id){
+  el.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  ['t-emp','t-api','t-fis'].forEach(i=>{const e=document.getElementById(i);if(e)e.style.display=i===id?'block':'none'});
+}
+function $m(n){return parseFloat(n||0).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function fm(n){return '$'+$m(n)}
+
+// DASHBOARD
+function renderDash(){
+  const invs = ST.invoices;
+  const paid=invs.filter(i=>i.s==='pagada'), pend=invs.filter(i=>i.s==='pendiente'), ovr=invs.filter(i=>i.s==='vencida');
+  document.getElementById('kv-tot').textContent = fm(paid.reduce((a,i)=>a+i.tot,0));
+  document.getElementById('kv-paid').textContent = paid.length;
+  document.getElementById('kv-pend').textContent = pend.length;
+  document.getElementById('kv-ovr').textContent = ovr.length;
+  const rows = [...invs].sort((a,b)=>b.cr-a.cr).slice(0,5);
+  document.getElementById('dash-tb').innerHTML = rows.length ? rows.map(i=>`<tr>
+    <td><span class="cl" onclick="viewInv('${i.id}')">${i.num}</span></td>
+    <td><div style="font-weight:500">${i.cn}</div></td>
+    <td style="font-size:12px;color:var(--t2)">${i.fe}</td>
+    <td style="font-weight:600">${fm(i.tot)}</td>
+    <td>${sb(i.s)}</td>
+    <td><span class="cl" onclick="viewInv('${i.id}')" style="font-size:12px">Ver →</span></td>
+  </tr>`).join('') : `<tr><td colspan="6" style="text-align:center;color:var(--t3);padding:24px">Sin facturas. <span class="cl" onclick="go('nueva')">Crear →</span></td></tr>`;
+}
+
+// FACTURAS
+function sb(s){const m={pagada:'b-g ✅ Pagada',pendiente:'b-y ⏳ Pendiente',vencida:'b-r ❌ Vencida',borrador:'b-gr 📋 Borrador'};const p=(m[s]||'b-gr '+s).split(' ');return `<span class="badge ${p[0]}">${p.slice(1).join(' ')}</span>`}
+function renderInv(){
+  let invs=[...ST.invoices];
+  const q=(document.getElementById('inv-q')||{}).value||'';
+  const f=(document.getElementById('inv-f')||{}).value||'';
+  if(q) invs=invs.filter(i=>i.cn.toLowerCase().includes(q.toLowerCase())||i.num.toLowerCase().includes(q.toLowerCase()));
+  if(f) invs=invs.filter(i=>i.s===f);
+  invs.sort((a,b)=>b.cr-a.cr);
+  document.getElementById('inv-tb').innerHTML = invs.length ? invs.map(i=>`<tr>
+    <td><span class="cl" onclick="viewInv('${i.id}')">${i.num}</span></td>
+    <td><div style="font-weight:500">${i.cn}</div><div style="font-size:10px;color:var(--t3)">${i.ce||''}</div></td>
+    <td style="font-size:12px;color:var(--t2)">${i.fe}</td>
+    <td style="font-size:12px;color:var(--t2)">${i.fv}</td>
+    <td style="font-weight:600">${fm(i.tot)} ${i.cur||'MXN'}</td>
+    <td>${sb(i.s)}</td>
+    <td><div style="display:flex;gap:4px">
+      <button class="btn btn-xs btn-ghost" onclick="viewInv('${i.id}')">Ver</button>
+      <button class="btn btn-xs btn-ghost" onclick="delInv('${i.id}')" style="color:var(--red)">🗑</button>
+    </div></td>
+  </tr>`).join('') : `<tr><td colspan="7" style="text-align:center;color:var(--t3);padding:24px">Sin facturas. <span class="cl" onclick="go('nueva')">Crear →</span></td></tr>`;
+}
+function viewInv(id){
+  const inv=ST.invoices.find(i=>i.id===id); if(!inv) return;
+  ST.curInv=inv;
+  document.getElementById('m-inv-t').textContent=inv.num+' — '+inv.cn;
+  document.getElementById('m-inv-c').innerHTML=buildHTML(inv);
+  openM('m-inv');
+}
+function editInv(){
+  const inv=ST.curInv; if(!inv) return;
+  closeM('m-inv');
+  document.getElementById('f-num').value=inv.num;
+  document.getElementById('f-fecha').value=inv.fe;
+  document.getElementById('f-vence').value=inv.fv;
+  document.getElementById('f-status').value=inv.s;
+  document.getElementById('f-cnom').value=inv.cn;
+  document.getElementById('f-crfc').value=inv.cr2||'';
+  document.getElementById('f-cdir').value=inv.cd||'';
+  document.getElementById('f-cemail').value=inv.ce||'';
+  document.getElementById('f-ctel').value=inv.ct||'';
+  document.getElementById('f-notas').value=inv.no||'';
+  ST.LI=inv.li||[{desc:'',qty:1,price:0}];
+  go('nueva'); renderLI(); calcT();
+}
+function delInv(id){if(!confirm('¿Eliminar?'))return;ST.invoices=ST.invoices.filter(i=>i.id!==id);saveS();renderInv();notif('🗑️ Eliminada')}
+function printCurr(){const inv=ST.curInv;if(!inv)return;const w=window.open('','_blank');w.document.write(`<!DOCTYPE html><html><head><title>${inv.num}</title><style>body{font-family:Arial,sans-serif;padding:40px}@media print{body{padding:0}}</style></head><body>${buildHTML(inv)}</body></html>`);w.document.close();w.print()}
+
+// CLIENTES
+function renderCli(){
+  document.getElementById('cli-tb').innerHTML = ST.clientes.length ? ST.clientes.map(c=>{
+    const ci=ST.invoices.filter(i=>i.cid===c.id), tot=ci.reduce((a,i)=>a+i.tot,0);
+    return `<tr><td><div style="font-weight:500">${c.n}</div></td><td style="font-family:monospace;font-size:11px">${c.r||'-'}</td><td style="font-size:12px">${c.e||'-'}</td><td style="text-align:center">${ci.length}</td><td style="font-weight:600">${fm(tot)}</td><td><button class="btn btn-xs btn-ghost" onclick="delCli('${c.id}')" style="color:var(--red)">🗑</button></td></tr>`;
+  }).join('') : `<tr><td colspan="6" style="text-align:center;color:var(--t3);padding:24px">Sin clientes. <span class="cl" onclick="openM('m-cli')">Agregar →</span></td></tr>`;
+}
+function saveCli(){
+  const n=document.getElementById('mc-n').value; if(!n){notif('⚠️ Nombre requerido');return;}
+  ST.clientes.push({id:Date.now().toString(),n,r:document.getElementById('mc-r').value,d:document.getElementById('mc-d').value,e:document.getElementById('mc-e').value,t:document.getElementById('mc-t').value});
+  saveS();closeM('m-cli');renderCli();notif('✅ Cliente guardado');
+  ['mc-n','mc-r','mc-d','mc-e','mc-t'].forEach(id=>document.getElementById(id).value='');
+}
+function delCli(id){if(!confirm('¿Eliminar?'))return;ST.clientes=ST.clientes.filter(c=>c.id!==id);saveS();renderCli()}
+
+// LINE ITEMS
+function addLI(){ST.LI.push({desc:'',qty:1,price:0});renderLI()}
+function rmLI(i){ST.LI.splice(i,1);if(!ST.LI.length)ST.LI=[{desc:'',qty:1,price:0}];renderLI();calcT();livePreview()}
+function renderLI(){
+  document.getElementById('li-tb').innerHTML = ST.LI.map((li,i)=>`<tr>
+    <td><input type="text" value="${li.desc}" placeholder="Descripción del servicio" oninput="ST.LI[${i}].desc=this.value;livePreview()"></td>
+    <td><input type="number" value="${li.qty}" min="1" style="width:55px" oninput="ST.LI[${i}].qty=+this.value;calcT();livePreview()"></td>
+    <td><input type="number" value="${li.price}" min="0" step="0.01" style="width:95px" oninput="ST.LI[${i}].price=+this.value;calcT();livePreview()"></td>
+    <td style="font-size:12px;font-weight:600;color:var(--t2)">${fm(li.qty*li.price)}</td>
+    <td><button class="li-del" onclick="rmLI(${i})">×</button></td>
+  </tr>`).join('');
+}
+function calcT(){
+  const sub=ST.LI.reduce((s,l)=>s+(l.qty*l.price),0);
+  const r=parseFloat(document.getElementById('iva-r').value||16)/100;
+  const iva=sub*r, tot=sub+iva;
+  document.getElementById('c-sub').textContent=fm(sub);
+  document.getElementById('c-iva').textContent=fm(iva);
+  document.getElementById('c-tot').textContent=fm(tot);
+  return {sub,iva,tot};
+}
+
+// NUEVA FACTURA
+function initNueva(){
+  const td=new Date().toISOString().split('T')[0];
+  const dv=new Date(Date.now()+30*864e5).toISOString().split('T')[0];
+  document.getElementById('f-fecha').value=td;
+  document.getElementById('f-vence').value=dv;
+  const cfg=ST.cfg;
+  document.getElementById('f-num').value=(cfg.pre||'INV-')+String(parseInt(cfg.nn||1)).padStart(3,'0');
+  if(!ST.LI.length) ST.LI=[{desc:'',qty:1,price:0}];
+  renderLI(); calcT(); livePreview();
+}
+function saveInv(status){
+  const {sub,iva,tot}=calcT();
+  const cfg=ST.cfg;
+  const inv={
+    id:ST.curInv?.id||Date.now().toString(),
+    num:document.getElementById('f-num').value,
+    fe:document.getElementById('f-fecha').value,
+    fv:document.getElementById('f-vence').value,
+    s:status, cur:document.getElementById('f-cur').value,
+    cn:document.getElementById('f-cnom').value||'Sin nombre',
+    cr2:document.getElementById('f-crfc').value,
+    cd:document.getElementById('f-cdir').value,
+    ce:document.getElementById('f-cemail').value,
+    ct:document.getElementById('f-ctel').value,
+    no:document.getElementById('f-notas').value,
+    li:JSON.parse(JSON.stringify(ST.LI)),
+    sub,iva,tot,ivr:parseFloat(document.getElementById('iva-r').value||16),
+    en:cfg.razon||'Mi Empresa', er:cfg.rfc||'', ed:cfg.dir||'', ef:cfg.footer||'',
+    cr:ST.curInv?.cr||Date.now()
+  };
+  const idx=ST.invoices.findIndex(i=>i.id===inv.id);
+  if(idx>=0) ST.invoices[idx]=inv; else ST.invoices.push(inv);
+  if(!ST.curInv){cfg.nn=String(parseInt(cfg.nn||1)+1);saveCfg()}
+  ST.curInv=null; saveS(); notif('✅ Factura guardada'); go('invoices');
+}
+function livePreview(){
+  const el=document.getElementById('live-prev'); if(!el) return;
+  const {sub,iva,tot}=calcT();
+  const c1=document.getElementById('ed-c1')?.value||'#1B2D3E';
+  const c2=document.getElementById('ed-c2')?.value||'#2BA99B';
+  const inv={
+    num:document.getElementById('f-num').value||'INV-001',
+    fe:document.getElementById('f-fecha').value||'-',
+    fv:document.getElementById('f-vence').value||'-',
+    cur:document.getElementById('f-cur').value||'MXN',
+    cn:document.getElementById('f-cnom').value||'Cliente',
+    cr2:document.getElementById('f-crfc').value||'',
+    cd:document.getElementById('f-cdir').value||'',
+    li:JSON.parse(JSON.stringify(ST.LI)),
+    sub,iva,ivr:16,tot,
+    no:document.getElementById('f-notas').value||'',
+    en:ST.cfg.razon||'Mi Empresa', er:ST.cfg.rfc||'', ed:ST.cfg.dir||'', ef:ST.cfg.footer||''
+  };
+  el.innerHTML=buildHTML(inv,c1,c2);
+}
+
+// TEMPLATES
+const TPLS={modern:{c1:'#1B2D3E',c2:'#2BA99B'},minimal:{c1:'#2d3748',c2:'#667eea'},bold:{c1:'#c53030',c2:'#f6ad55'},corporate:{c1:'#1a365d',c2:'#3182ce'}};
+function applyTpl(t){const p=TPLS[t];document.getElementById('ed-c1').value=p.c1;document.getElementById('ed-c2').value=p.c2;edPreview()}
+function edPreview(){
+  const el=document.getElementById('ed-prev'); if(!el) return;
+  const c1=document.getElementById('ed-c1').value;
+  const c2=document.getElementById('ed-c2').value;
+  const inv={
+    num:'INV-001',fe:'2026-03-24',fv:'2026-04-23',cur:'MXN',
+    cn:'Cliente Ejemplo S.A.',cr2:'CEJE010101AAA',cd:'Av. Reforma 123, CDMX',
+    en:document.getElementById('ed-name').value||'Mi Empresa',
+    er:'RFC-EMISOR',ed:document.getElementById('ed-sub').value||'Servicios Profesionales',ef:'Gracias por su preferencia.',
+    li:[{desc:'Consultoría Estratégica',qty:3,price:15000},{desc:'Implementación IA',qty:1,price:45000}],
+    sub:90000,iva:14400,ivr:16,tot:104400,no:'Pago a 30 días. Transferencia bancaria.'
+  };
+  el.innerHTML=buildHTML(inv,c1,c2);
+}
+function buildHTML(inv,c1,c2){
+  c1=c1||document.getElementById('ed-c1')?.value||'#1B2D3E';
+  c2=c2||document.getElementById('ed-c2')?.value||'#2BA99B';
+  return `<div style="background:#fff;padding:36px;font-family:Arial,sans-serif;border-radius:8px">
+<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:26px;flex-wrap:wrap;gap:12px">
+  <div><div style="font-size:20px;font-weight:900;color:${c1}">${inv.en||'Mi Empresa'}</div><div style="font-size:11px;color:#888">${inv.er||''}</div><div style="font-size:11px;color:#888">${inv.ed||''}</div></div>
+  <div style="text-align:right"><div style="font-size:26px;font-weight:900;color:${c2}">FACTURA</div><div style="font-size:13px;font-weight:700;color:#333">${inv.num}</div><div style="font-size:11px;color:#888">Emisión: ${inv.fe}</div><div style="font-size:11px;color:#888">Vence: ${inv.fv}</div></div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:22px;padding:16px;background:#f7fafc;border-radius:8px">
+  <div><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#aaa;margin-bottom:5px">CLIENTE</div><div style="font-size:13px;font-weight:700;color:#1a202c">${inv.cn}</div><div style="font-size:11px;color:#666">${inv.cr2||''}</div><div style="font-size:11px;color:#666">${inv.cd||''}</div></div>
+  <div><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#aaa;margin-bottom:5px">MONEDA</div><div style="font-size:13px;font-weight:700">${inv.cur||'MXN'}</div></div>
+</div>
+<table style="width:100%;border-collapse:collapse;margin-bottom:16px">
+  <thead><tr style="background:${c1}"><th style="padding:9px 12px;text-align:left;font-size:10px;color:#fff;font-weight:700">DESCRIPCIÓN</th><th style="padding:9px 12px;text-align:center;font-size:10px;color:#fff;font-weight:700;width:55px">QTY</th><th style="padding:9px 12px;text-align:right;font-size:10px;color:#fff;font-weight:700;width:105px">P.UNIT</th><th style="padding:9px 12px;text-align:right;font-size:10px;color:#fff;font-weight:700;width:105px">IMPORTE</th></tr></thead>
+  <tbody>${(inv.li||[]).map((l,i)=>`<tr style="background:${i%2?'#f9fafb':'#fff'}"><td style="padding:9px 12px;font-size:12px;border-bottom:1px solid #e2e8f0">${l.desc||'Concepto'}</td><td style="padding:9px 12px;font-size:12px;border-bottom:1px solid #e2e8f0;text-align:center">${l.qty}</td><td style="padding:9px 12px;font-size:12px;border-bottom:1px solid #e2e8f0;text-align:right">${fm(l.price)}</td><td style="padding:9px 12px;font-size:12px;border-bottom:1px solid #e2e8f0;text-align:right;font-weight:600">${fm(l.qty*l.price)}</td></tr>`).join('')}</tbody>
+</table>
+<div style="display:flex;justify-content:flex-end;margin-bottom:18px">
+  <div style="width:230px">
+    <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px;color:#666"><span>Subtotal</span><span>${fm(inv.sub)}</span></div>
+    <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px;color:#666"><span>IVA ${inv.ivr||16}%</span><span>${fm(inv.iva)}</span></div>
+    <div style="display:flex;justify-content:space-between;padding:8px 0 0;border-top:2px solid ${c1};margin-top:4px;font-size:15px;font-weight:900;color:${c1}"><span>TOTAL ${inv.cur||'MXN'}</span><span>${fm(inv.tot)}</span></div>
+  </div>
+</div>
+${inv.no?`<div style="background:${c2}18;border-left:3px solid ${c2};padding:11px 14px;border-radius:6px;font-size:12px;color:#444;margin-bottom:14px"><strong>Notas:</strong> ${inv.no}</div>`:''}
+${inv.ef?`<div style="border-top:1px solid #e2e8f0;padding-top:10px;font-size:10px;color:#aaa;text-align:center">${inv.ef}</div>`:''}
+</div>`;
+}
+function printInv(){const h=document.getElementById('ed-prev').innerHTML;const w=window.open('','_blank');w.document.write(`<!DOCTYPE html><html><head><title>Factura</title><style>body{margin:0;padding:20px;font-family:Arial,sans-serif}@media print{body{padding:0}}</style></head><body>${h}</body></html>`);w.document.close();setTimeout(()=>w.print(),400)}
+function copyHTML(){navigator.clipboard.writeText(document.getElementById('ed-prev').innerHTML).then(()=>notif('📋 HTML copiado'))}
+
+// AGENTES
+function selAg(a,el){ST.agent=a;document.querySelectorAll('.ag-card').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');document.getElementById('ag-cfg-title').textContent=el.querySelector('[style*="font-size:14px"]').textContent+' — Configuración'}
+
+// CHAT
+let agName='Agente Creador';
+const AG_NAMES={creador:'✏️ Agente Creador',revisor:'🔍 Agente Revisor',redactor:'📝 Agente Redactor',cobrador:'💰 Agente Cobrador'};
+const AG_WELCOME={
+  creador:'¡Hola! Soy el *Agente Creador*. Descríbeme la factura que necesitas y la genero al instante. Por ejemplo: *"Factura para Empresa ABC por 3 meses de consultoría a $20,000 mensual"*',
+  revisor:'Soy el *Agente Revisor*. Dame los datos de tu factura y valido RFC, montos, IVA y fechas para que todo esté correcto fiscalmente.',
+  redactor:'Soy el *Agente Redactor*. Cuéntame el servicio que prestaste y mejoro la descripción para que suene más profesional.',
+  cobrador:'Soy el *Agente Cobrador*. Dime qué facturas tienes vencidas y te genero recordatorios de pago profesionales.'
+};
+function initChat(){addMsg('s','Sistema Multi-Agente iniciado · Claude AI');addMsg('a',AG_WELCOME.creador)}
+function setAg(a){
+  ST.agent=a;ST.hist=[];agName=AG_NAMES[a]||a;
+  document.getElementById('ag-lbl').textContent=agName+' activo';
+  document.querySelectorAll('[id^="btn-"]').forEach(b=>{b.style.borderColor='var(--border)';b.style.color='var(--t2)'});
+  const btn=document.getElementById('btn-'+a);if(btn){btn.style.borderColor='var(--teal)';btn.style.color='var(--teal)'}
+  document.getElementById('chat-msgs').innerHTML='';
+  addMsg('s',agName+' activado');addMsg('a',AG_WELCOME[a]||'¡Listo para ayudarte!');
+}
+function addMsg(type,text){
+  const msgs=document.getElementById('chat-msgs');
+  const d=document.createElement('div');d.className='ai-msg '+type;
+  if(type==='a') d.innerHTML=`<div class="ag-tag">${agName}</div>`+text.replace(/\*([^*]+)\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+  else d.textContent=text;
+  msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;
+}
+function chatKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat()}}
+async function sendChat(){
+  const inp=document.getElementById('chat-inp');
+  const txt=inp.value.trim();if(!txt)return;
+  inp.value='';addMsg('u',txt);
+  ST.hist.push({role:'user',content:txt});
+  const key=ST.cfg.ckey;
+  if(!key){
+    setTimeout(()=>{
+      const d=demoResp(txt);
+      addMsg('a',d);ST.hist.push({role:'assistant',content:d});
+    },700);
+    return;
+  }
+  addMsg('s','⏳ Procesando...');
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:ST.cfg.cmod||'claude-opus-4-5',max_tokens:parseInt(ST.cfg.mtok)||4096,system:PROMPTS[ST.agent]||PROMPTS.creador,messages:ST.hist.slice(-8)})
+    });
+    document.querySelectorAll('.ai-msg.s').forEach((el,i,arr)=>{if(i===arr.length-1)el.remove()});
+    if(!r.ok){const e=await r.json();addMsg('a','❌ Error: '+(e.error?.message||r.status));return}
+    const data=await r.json();
+    const reply=data.content?.[0]?.text||'Sin respuesta';
+    addMsg('a',reply);ST.hist.push({role:'assistant',content:reply});
+  }catch(e){
+    document.querySelectorAll('.ai-msg.s').forEach((el,i,arr)=>{if(i===arr.length-1)el.remove()});
+    addMsg('a','❌ Error de conexión. Verifica tu API Key en Configuración.');
+  }
+}
+function demoResp(txt){
+  const t=txt.toLowerCase();
+  if(t.match(/factura|consul|servic|mes|peso|usd/)) return '*¡Perfecto!* He analizado tu solicitud. Para activar la generación real con Claude, ve a *Configuración → API Keys* y agrega tu clave de Anthropic.\n\nEn modo demo puedo mostrarte cómo funcionaría: extraería cliente, conceptos, cantidades, calcularía IVA 16% y generaría la factura completa automáticamente. ¿Quieres ir a Configuración ahora?';
+  if(t.match(/venci|cobr|pago|record/)) return '*Agente Cobrador en modo demo* 📋\n\nCon Claude activo, analizaría tus facturas vencidas y generaría recordatorios personalizados por cliente. El tono se adapta según días vencidos: amable (<15 días), firme (15-30), formal (+30).\n\nAgrega tu API Key para activarlo.';
+  return '¡Entendido! Con la *API Key de Claude* configurada, procesaré tu solicitud al instante. Ve a *Configuración → API Keys* para activar toda la inteligencia del sistema.';
+}
+
+// CONFIG
+function loadCfg(){
+  const cfg=ST.cfg;
+  const m={'cfg-razon':'razon','cfg-rfc':'rfc','cfg-dir':'dir','cfg-email':'email','cfg-tel':'tel','cfg-web':'web','cfg-footer':'footer','cfg-ckey':'ckey','cfg-mtok':'mtok','cfg-iva':'iva','cfg-isr':'isr','cfg-pre':'pre','cfg-nn':'nn','cfg-dc':'dc'};
+  Object.entries(m).forEach(([elId,k])=>{const el=document.getElementById(elId);if(el&&cfg[k])el.value=cfg[k]});
+}
+function saveCfg(){
+  const m={'cfg-razon':'razon','cfg-rfc':'rfc','cfg-dir':'dir','cfg-email':'email','cfg-tel':'tel','cfg-web':'web','cfg-footer':'footer','cfg-ckey':'ckey','cfg-cmod':'cmod','cfg-mtok':'mtok','cfg-iva':'iva','cfg-isr':'isr','cfg-pre':'pre','cfg-nn':'nn','cfg-dc':'dc'};
+  Object.entries(m).forEach(([elId,k])=>{const el=document.getElementById(elId);if(el)ST.cfg[k]=el.value});
+  localStorage.setItem('ios_cfg',JSON.stringify(ST.cfg));
+}
+async function testKey(){
+  const key=document.getElementById('cfg-ckey').value;
+  const res=document.getElementById('key-res');
+  if(!key){res.textContent='⚠️ Ingresa una clave';return}
+  res.textContent='⏳ Probando...';
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-haiku-3-5',max_tokens:10,messages:[{role:'user',content:'ping'}]})
+    });
+    if(r.ok){res.textContent='✅ Conexión exitosa';res.style.color='var(--green)'}
+    else{const e=await r.json();res.textContent='❌ '+e.error?.message;res.style.color='var(--red)'}
+  }catch(e){res.textContent='❌ '+e.message;res.style.color='var(--red)'}
+}
+function saveS(){localStorage.setItem('ios_inv',JSON.stringify(ST.invoices));localStorage.setItem('ios_cli',JSON.stringify(ST.clientes))}
+
+// INIT
+document.addEventListener('DOMContentLoaded',()=>{
+  loadCfg();
+  if(!ST.invoices.length){
+    ST.invoices=[
+      {id:'d1',num:'INV-001',fe:'2026-03-01',fv:'2026-03-31',s:'pagada',cur:'MXN',cn:'Empresa ABC S.A.',cr2:'EABC010101000',ce:'abc@empresa.com',cd:'CDMX',ct:'',no:'Pagado vía transferencia',li:[{desc:'Consultoría Estratégica',qty:1,price:45000}],sub:45000,iva:7200,ivr:16,tot:52200,en:'Mi Empresa',er:'MIEM010101AAA',ed:'CDMX',ef:'',cr:Date.now()-2e6},
+      {id:'d2',num:'INV-002',fe:'2026-03-15',fv:'2026-04-14',s:'pendiente',cur:'MXN',cn:'Tecnologías XYZ',cr2:'TXYZ010101000',ce:'xyz@tech.com',cd:'MTY',ct:'',no:'Pago a 30 días',li:[{desc:'Implementación IA',qty:1,price:80000},{desc:'Capacitación',qty:2,price:5000}],sub:90000,iva:14400,ivr:16,tot:104400,en:'Mi Empresa',er:'MIEM010101AAA',ed:'CDMX',ef:'',cr:Date.now()-1e6},
+      {id:'d3',num:'INV-003',fe:'2026-02-01',fv:'2026-03-02',s:'vencida',cur:'USD',cn:'Global Corp',cr2:'GCOR010101000',ce:'global@corp.com',cd:'NYC',ct:'',no:'NET 30',li:[{desc:'Software License',qty:5,price:2000}],sub:10000,iva:1600,ivr:16,tot:11600,en:'Mi Empresa',er:'MIEM010101AAA',ed:'CDMX',ef:'',cr:Date.now()-3e6}
+    ];
+    saveS();
+  }
+  renderDash();
+});
+</script>
+</body>
+</html>
